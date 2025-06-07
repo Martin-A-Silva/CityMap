@@ -5,6 +5,6 @@ import retrofit2.http.GET
 
 interface CityApi {
 
-    @GET
+    @GET("cities.json")
     suspend fun getCityList(): List<CityApiModel>
 }
