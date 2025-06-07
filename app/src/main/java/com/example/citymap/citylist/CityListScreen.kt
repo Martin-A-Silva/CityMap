@@ -1,6 +1,7 @@
 package com.example.citymap.citylist
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,6 +15,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -21,16 +32,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.citymap.R
+import com.example.citymap.data.remote.response.CityApiModel
 
 @Composable
 fun CityListScreen(
@@ -43,16 +60,15 @@ fun CityListScreen(
         modifier = Modifier.fillMaxSize()
     ) {
         Column {
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             SearchBar(
-                hint = "Search City by name", modifier = Modifier
+                hint = "Search city by name", modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
                 viewModel.filterCitiesByPrefix(it)
             }
-            Spacer(modifier = Modifier.height(16.dp))
             CityList(navController)
         }
     }
@@ -105,58 +121,70 @@ fun CityList(
     val loadError by remember { viewModel.loadError }
     val isSearching by remember { viewModel.isSearching }
 
-    LazyColumn(contentPadding = PaddingValues(16.dp)) {
-        val itemCount = cityList.size
-        items(itemCount) {
-            /*if (it >= itemCount - 1 && endReached.not() && isLoading.not() && isSearching.not()) {
-                viewModel.loadPokemonPaginated()
-            }*/
-            //PokedexRow(rowIndex = it, entries = pokemonList, navController = navController)
-            Text(cityList[it].name)
-            Spacer(modifier = Modifier.height(16.dp))
+    if (isLoading) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .scale(1f)
+            )
+        }
+    } else {
+        LazyColumn(contentPadding = PaddingValues(16.dp)) {
+            val itemCount = cityList.size
+            items(itemCount) {
+                CityEntry(index = it, entries = cityList, navController = navController)
+                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
+            }
         }
     }
 
-    /*Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        if (isLoading) {
-            CircularProgressIndicator(color = MaterialTheme.colors.primary)
-        }
-        if (loadError.isNotEmpty()) {
-            RetrySection(error = loadError) {
-                viewModel.loadPokemonPaginated()
-            }
-        }
-    }*/
 
 }
-/*
+
 
 @Composable
-fun PokedexRow(
-    rowIndex: Int,
-    entries: List<PokedexListEntry>,
+fun CityEntry(
+    index: Int,
+    entries: List<CityApiModel>,
     navController: NavController
 ) {
-    Column {
-        Row {
-            PokedexEntry(
-                entry = entries[2 * rowIndex],
-                navController = navController,
-                modifier = Modifier.weight(1f)
+    var isToggled by rememberSaveable { mutableStateOf(false) }
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                "${entries[index].name}, ${entries[index].country}",
+                modifier = Modifier.weight(1f),
+                fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.width(16.dp))
-            if (entries.size >= 2 * rowIndex + 2) {
-                PokedexEntry(
-                    entry = entries[2 * rowIndex + 1],
-                    navController = navController,
-                    modifier = Modifier.weight(1f)
+            IconButton(
+                onClick = { }
+            ) {
+                Icon(
+                    Icons.Default.Info,
+                    contentDescription = "More info"
                 )
-            } else {
-                Spacer(modifier = Modifier.weight(1f))
+            }
+            IconButton(
+                onClick = { isToggled = !isToggled }
+            ) {
+                Icon(
+                    if (isToggled) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = if (isToggled) "Remove from favorites" else "Add to favorites"
+                )
             }
         }
+        Row {
+            Text("Lat: ${entries[index].coord.lon} - Lon: ${entries[index].coord.lat}")
+        }
     }
-}*/
+}
