@@ -30,8 +30,6 @@ androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
-androidx-material = { group = "androidx.compose.material", name = "material-android" }
-androidx-material-icons = { group = "androidx.compose.material", name = "material-icons-core" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version = "2.9.0" }
 retrofit-converter = { group = "com.squareup.retrofit2", name = "converter-gson", version = "2.9.0" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version = "4.9.0" }
