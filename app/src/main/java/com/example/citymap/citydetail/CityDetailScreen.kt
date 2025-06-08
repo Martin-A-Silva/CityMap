@@ -1,7 +1,6 @@
 package com.example.citymap.citydetail
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -23,13 +22,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.citymap.data.remote.response.CityApiModel
-import com.example.citymap.data.remote.response.CoordApiModel
+import com.example.citymap.data.model.City
+import com.example.citymap.data.model.Coord
 
 @Composable
 fun CityDetailScreen(
     navController: NavController,
-    city: CityApiModel,
+    city: City,
     modifier: Modifier = Modifier
 ) {
     Surface {
@@ -77,11 +76,11 @@ fun CityDetailScreenPreview() {
     val mockNavController = rememberNavController()
 
     // 2. Create mock CityApiModel data
-    val mockCity = CityApiModel(
+    val mockCity = City(
         id = 1,
         name = "Springfield",
         country = "USA",
-        coord = CoordApiModel(lat = 37.2153, lon = -93.2982),
+        coord = Coord(lat = 37.2153, lon = -93.2982),
         // Add other necessary fields for CityApiModel if any, with default/mock values
         // For example, if CityApiModel has a 'population' field:
         // population = 170000

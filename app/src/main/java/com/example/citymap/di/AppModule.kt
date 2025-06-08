@@ -1,7 +1,11 @@
 package com.example.citymap.di
 
+import android.app.Application
+import androidx.room.Room
+import com.example.citymap.data.model.AppDatabase
+import com.example.citymap.data.model.CityDao
 import com.example.citymap.data.remote.CityApi
-import com.example.citymap.data.remote.repository.CityRepository
+import com.example.citymap.data.remote.repository.CityRemoteRepository
 import com.example.citymap.util.Constants.BASE_URL
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.GsonBuilder
@@ -19,20 +23,25 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideCityRepository(api: CityApi) = CityRepository(api)
+    fun provideCityRepository(api: CityApi, dao: CityDao) = CityRemoteRepository(api, dao)
 
     @Singleton
     @Provides
     fun provideCityApi(): CityApi {
         return Retrofit.Builder()
             .addConverterFactory(
-                GsonConverterFactory.create(
-                    GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-                        .create()
-                )
+                GsonConverterFactory.create()
             )
             .baseUrl(BASE_URL)
             .build()
             .create(CityApi::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun provideDatabase(app: Application): AppDatabase =
+        Room.databaseBuilder(app, AppDatabase::class.java, "cities.db").build()
+
+    @Provides
+    fun provideCityDao(db: AppDatabase): CityDao = db.cityDao()
 }

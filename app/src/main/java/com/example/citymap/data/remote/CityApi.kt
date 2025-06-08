@@ -1,10 +1,13 @@
 package com.example.citymap.data.remote
 
-import com.example.citymap.data.remote.response.CityApiModel
+import okhttp3.ResponseBody
+import retrofit2.Response
 import retrofit2.http.GET
+import retrofit2.http.Streaming
 
 interface CityApi {
 
     @GET("cities.json")
-    suspend fun getCityList(): List<CityApiModel>
+    @Streaming
+    suspend fun getCityList(): Response<ResponseBody>
 }

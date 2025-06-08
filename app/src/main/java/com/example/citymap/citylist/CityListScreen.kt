@@ -2,7 +2,6 @@ package com.example.citymap.citylist
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,9 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,25 +35,23 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.citymap.R
-import com.example.citymap.citydetail.CityDetailScreen
-import com.example.citymap.data.remote.response.CityApiModel
+import androidx.paging.LoadState
+import androidx.paging.compose.collectAsLazyPagingItems
+import com.example.citymap.data.model.City
 
 @Composable
 fun CityListScreen(
     navController: NavController,
-    onItemClick: (CityApiModel) -> Unit,
-    onInfoClick: (CityApiModel) -> Unit,
+    onItemClick: (City) -> Unit,
+    onInfoClick: (City) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CityListViewModel = hiltViewModel()
 ) {
@@ -71,7 +67,7 @@ fun CityListScreen(
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                viewModel.filterCitiesByPrefix(it)
+                viewModel.updatePrefix(it)
             }
             CityList(navController, onItemClick, onInfoClick)
         }
@@ -118,60 +114,63 @@ fun SearchBar(
 @Composable
 fun CityList(
     navController: NavController,
-    onItemClick: (CityApiModel) -> Unit,
-    onInfoClick: (CityApiModel) -> Unit,
+    onItemClick: (City) -> Unit,
+    onInfoClick: (City) -> Unit,
     viewModel: CityListViewModel = hiltViewModel()
 ) {
-    val cityList by remember { viewModel.cities }
+    //val cityList by remember { viewModel.cities }
     val isLoading by remember { viewModel.isLoading }
     val loadError by remember { viewModel.loadError }
     val isSearching by remember { viewModel.isSearching }
+    LaunchedEffect(Unit) {
+        viewModel.loadCitiesFromNetwork()
+    }
+    val cities = viewModel.cityPagingData.collectAsLazyPagingItems()
 
-    if (isLoading) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            CircularProgressIndicator(
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .scale(1f)
-            )
-        }
-    } else {
-        LazyColumn(contentPadding = PaddingValues(16.dp)) {
-            val itemCount = cityList.size
-            items(itemCount) {
+    LazyColumn(contentPadding = PaddingValues(16.dp)) {
+        items(cities.itemCount) { index ->
+            val city = cities[index]
+            city?.let {
                 CityEntry(
-                    index = it,
-                    entries = cityList,
-                    navController = navController,
+                    entry = it,
                     onItemClick = onItemClick,
                     onInfoClick = onInfoClick
                 )
-                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
+            }
+            HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
+        }
+
+        cities.apply {
+            when {
+                loadState.append is LoadState.Loading -> {
+                    item { CircularProgressIndicator() }
+                }
+
+                loadState.refresh is LoadState.Loading -> {
+                    item { CircularProgressIndicator() }
+                }
+
+                loadState.append is LoadState.Error -> {
+                    item { Text("Error loading more cities") }
+                }
             }
         }
     }
-
-
 }
 
 
 @Composable
 fun CityEntry(
-    index: Int,
-    entries: List<CityApiModel>,
-    navController: NavController,
-    onItemClick: (CityApiModel) -> Unit,
-    onInfoClick: (CityApiModel) -> Unit,
+    entry: City,
+    onItemClick: (City) -> Unit,
+    onInfoClick: (City) -> Unit,
 ) {
     var isToggled by rememberSaveable { mutableStateOf(false) }
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                onItemClick(entries[index])
+                onItemClick(entry)
             }
     ) {
         Row(
@@ -179,13 +178,13 @@ fun CityEntry(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                "${entries[index].name}, ${entries[index].country}",
+                "${entry.name}, ${entry.country}",
                 modifier = Modifier.weight(1f),
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.width(16.dp))
             IconButton(
-                onClick = { onInfoClick.invoke(entries[index]) }
+                onClick = { onInfoClick.invoke(entry) }
             ) {
                 Icon(
                     Icons.Default.Info,
@@ -202,7 +201,7 @@ fun CityEntry(
             }
         }
         Row {
-            Text("Lat: ${entries[index].coord.lon} - Lon: ${entries[index].coord.lat}")
+            Text("Lat: ${entry.coord.lon} - Lon: ${entry.coord.lat}")
         }
     }
 }

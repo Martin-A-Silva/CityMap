@@ -10,19 +10,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import androidx.navigation.toRoute
 import com.example.citymap.citydetail.CityDetailScreen
 import com.example.citymap.citylist.CityListScreen
-import com.example.citymap.data.remote.response.CityApiModel
-import com.example.citymap.data.remote.response.CoordApiModel
+import com.example.citymap.data.model.City
+import com.example.citymap.data.model.Coord
 import com.example.citymap.ui.theme.CityMapTheme
 import com.example.citymap.util.parcelableType
-import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import kotlin.reflect.typeOf
 
@@ -58,13 +55,13 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
-                    composable<CityApiModel>(
+                    composable<City>(
                         typeMap = mapOf(
-                            typeOf<CityApiModel>() to parcelableType<CityApiModel>(),
-                            typeOf<CoordApiModel>() to parcelableType<CoordApiModel>()
-                            )
+                            typeOf<City>() to parcelableType<City>(),
+                            typeOf<Coord>() to parcelableType<Coord>()
+                        )
                     ) { backStackEntry ->
-                        val cityDetail = backStackEntry.toRoute<CityApiModel>()
+                        val cityDetail = backStackEntry.toRoute<City>()
                         CityDetailScreen(
                             navController = navController,
                             city = cityDetail
