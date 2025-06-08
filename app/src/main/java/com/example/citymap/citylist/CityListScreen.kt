@@ -46,17 +46,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.citymap.data.model.City
 import com.example.citymap.data.model.Coord
-import kotlinx.coroutines.delay
 
 @Composable
 fun CityListScreen(
     navController: NavController,
-    onItemClick: (City) -> Unit,
+    onItemClick: (Coord) -> Unit,
     onInfoClick: (City) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CityListViewModel = hiltViewModel()
@@ -65,7 +63,7 @@ fun CityListScreen(
 
     Surface(
         color = MaterialTheme.colorScheme.background,
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier
     ) {
         Column {
             Spacer(modifier = Modifier.height(24.dp))
@@ -136,7 +134,7 @@ fun SearchBar(
 @Composable
 fun CityList(
     navController: NavController,
-    onItemClick: (City) -> Unit,
+    onItemClick: (Coord) -> Unit,
     onInfoClick: (City) -> Unit,
     viewModel: CityListViewModel = hiltViewModel()
 ) {
@@ -176,7 +174,7 @@ fun CityList(
                     entry = safeCity,
                     onItemClick = onItemClick,
                     onInfoClick = onInfoClick,
-                    onToggleFavorite = { viewModel.toggleFavorite(it)}
+                    onToggleFavorite = { viewModel.toggleFavorite(it) }
                 )
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
@@ -188,7 +186,7 @@ fun CityList(
 @Composable
 fun CityEntry(
     entry: City,
-    onItemClick: (City) -> Unit,
+    onItemClick: (Coord) -> Unit,
     onInfoClick: (City) -> Unit,
     onToggleFavorite: (City) -> Unit
 ) {
@@ -196,7 +194,7 @@ fun CityEntry(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                onItemClick(entry)
+                onItemClick(entry.coord)
             }
     ) {
         Row(

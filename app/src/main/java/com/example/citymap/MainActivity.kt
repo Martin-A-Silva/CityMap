@@ -5,6 +5,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -18,6 +20,7 @@ import com.example.citymap.citydetail.CityDetailScreen
 import com.example.citymap.citylist.CityListScreen
 import com.example.citymap.data.model.City
 import com.example.citymap.data.model.Coord
+import com.example.citymap.map.MapScreen
 import com.example.citymap.ui.theme.CityMapTheme
 import com.example.citymap.util.parcelableType
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,12 +50,13 @@ class MainActivity : ComponentActivity() {
                     composable("city_list_screen") {
                         CityListScreen(
                             navController,
-                            onItemClick = { city ->
-                                navController.navigate(city)
+                            onItemClick = { coord ->
+                                navController.navigate(coord)
                             },
                             onInfoClick = { city ->
                                 navController.navigate(city)
-                            }
+                            },
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
                     composable<City>(
@@ -67,17 +71,35 @@ class MainActivity : ComponentActivity() {
                             city = cityDetail
                         )
                     }
-                    composable(
-                        "map_screen"/*,
-                        arguments = listOf(
-                            navArgument("lon") { type = NavType.FloatType },
-                            navArgument("lat") { type = NavType.FloatType }
-                        )*/
-                    ) {
-
+                    composable<Coord>(
+                        typeMap = mapOf(
+                            typeOf<Coord>() to parcelableType<Coord>()
+                        )
+                    ) { backStackEntry ->
+                        val cityCoord = backStackEntry.toRoute<Coord>()
+                        MapScreen(
+                            navController = navController,
+                            coord = cityCoord
+                        )
                     }
                     composable("city_map_screen") {
-
+                        Row {
+                            CityListScreen(
+                                navController,
+                                onItemClick = { coord ->
+                                    //update viewModel
+                                },
+                                onInfoClick = { city ->
+                                    navController.navigate(city)
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
+                            MapScreen(
+                                navController = navController,
+                                coord = Coord(lat = 0.0, lon = 0.0),
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
                 }
             }

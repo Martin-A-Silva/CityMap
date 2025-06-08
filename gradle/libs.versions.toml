@@ -55,6 +55,8 @@ androidx-room-paging = { group = "androidx.room", name = "room-paging", version.
 androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "roomVersion" }
 androidx-paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.ref = "pagingVersion" }
 androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "pagingVersion" }
+maps-compose = { group = "com.google.maps.android", name = "maps-compose", version = "6.6.0"}
+play-services-maps = { module = 'com.google.android.gms:play-services-maps', version = '19.0.0'}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

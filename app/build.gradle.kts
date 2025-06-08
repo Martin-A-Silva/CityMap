@@ -6,10 +6,16 @@ plugins {
     alias(libs.plugins.hiltAndroid)
     alias(libs.plugins.jetbrains.kotlin.serialization)
     id("kotlin-parcelize")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 hilt {
     enableAggregatingTask = false
+}
+
+secrets {
+    propertiesFileName = "secrets.properties"
+    defaultPropertiesFileName = "local.defaults.properties"
 }
 
 android {
@@ -75,6 +81,8 @@ dependencies {
     implementation(libs.androidx.room.testing)
     implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.paging.compose)
+    implementation(libs.maps.compose)
+    implementation(libs.play.services.maps)
     ksp(libs.androidx.room.compiler)
     ksp(libs.hilt.compiler)
     implementation(libs.palette)
