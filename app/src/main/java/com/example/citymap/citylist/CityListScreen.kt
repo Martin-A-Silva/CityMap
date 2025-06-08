@@ -51,6 +51,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.citymap.data.model.City
 import com.example.citymap.data.model.Coord
+import kotlinx.coroutines.delay
 
 @Composable
 fun CityListScreen(
@@ -143,6 +144,30 @@ fun CityList(
         viewModel.loadCitiesFromNetwork()
     }
     val cities = viewModel.cityPagingData.collectAsLazyPagingItems()
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        cities.apply {
+            when {
+                loadState.append is LoadState.Loading -> {
+                    CircularProgressIndicator()
+                }
+
+                loadState.refresh is LoadState.Loading -> {
+                    CircularProgressIndicator()
+                }
+
+                loadState.append is LoadState.Error -> {
+                    Text("Error loading more cities")
+                }
+            }
+        }
+    }
+
     LazyColumn(contentPadding = PaddingValues(16.dp)) {
         items(cities.itemCount) { index ->
             val city = cities[index]
@@ -155,22 +180,6 @@ fun CityList(
                 )
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
-        }
-
-        cities.apply {
-            when {
-                loadState.append is LoadState.Loading -> {
-                    item { CircularProgressIndicator() }
-                }
-
-                loadState.refresh is LoadState.Loading -> {
-                    item { CircularProgressIndicator() }
-                }
-
-                loadState.append is LoadState.Error -> {
-                    item { Text("Error loading more cities") }
-                }
-            }
         }
     }
 }
