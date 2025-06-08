@@ -1,6 +1,7 @@
 package com.example.citymap.citylist
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,11 +48,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.citymap.R
+import com.example.citymap.citydetail.CityDetailScreen
 import com.example.citymap.data.remote.response.CityApiModel
 
 @Composable
 fun CityListScreen(
     navController: NavController,
+    onItemClick: (CityApiModel) -> Unit,
+    onInfoClick: (CityApiModel) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: CityListViewModel = hiltViewModel()
 ) {
@@ -69,7 +73,7 @@ fun CityListScreen(
             ) {
                 viewModel.filterCitiesByPrefix(it)
             }
-            CityList(navController)
+            CityList(navController, onItemClick, onInfoClick)
         }
     }
 }
@@ -114,6 +118,8 @@ fun SearchBar(
 @Composable
 fun CityList(
     navController: NavController,
+    onItemClick: (CityApiModel) -> Unit,
+    onInfoClick: (CityApiModel) -> Unit,
     viewModel: CityListViewModel = hiltViewModel()
 ) {
     val cityList by remember { viewModel.cities }
@@ -136,7 +142,13 @@ fun CityList(
         LazyColumn(contentPadding = PaddingValues(16.dp)) {
             val itemCount = cityList.size
             items(itemCount) {
-                CityEntry(index = it, entries = cityList, navController = navController)
+                CityEntry(
+                    index = it,
+                    entries = cityList,
+                    navController = navController,
+                    onItemClick = onItemClick,
+                    onInfoClick = onInfoClick
+                )
                 HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
             }
         }
@@ -150,11 +162,17 @@ fun CityList(
 fun CityEntry(
     index: Int,
     entries: List<CityApiModel>,
-    navController: NavController
+    navController: NavController,
+    onItemClick: (CityApiModel) -> Unit,
+    onInfoClick: (CityApiModel) -> Unit,
 ) {
     var isToggled by rememberSaveable { mutableStateOf(false) }
     Column(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                onItemClick(entries[index])
+            }
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -167,7 +185,7 @@ fun CityEntry(
             )
             Spacer(modifier = Modifier.width(16.dp))
             IconButton(
-                onClick = { }
+                onClick = { onInfoClick.invoke(entries[index]) }
             ) {
                 Icon(
                     Icons.Default.Info,

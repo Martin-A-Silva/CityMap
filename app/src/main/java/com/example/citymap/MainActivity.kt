@@ -15,9 +15,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.toRoute
+import com.example.citymap.citydetail.CityDetailScreen
 import com.example.citymap.citylist.CityListScreen
+import com.example.citymap.data.remote.response.CityApiModel
+import com.example.citymap.data.remote.response.CoordApiModel
 import com.example.citymap.ui.theme.CityMapTheme
+import com.example.citymap.util.parcelableType
+import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
+import kotlin.reflect.typeOf
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -41,17 +48,34 @@ class MainActivity : ComponentActivity() {
                     }
                 ) {
                     composable("city_list_screen") {
-                        CityListScreen(navController)
+                        CityListScreen(
+                            navController,
+                            onItemClick = { city ->
+                                navController.navigate(city)
+                            },
+                            onInfoClick = { city ->
+                                navController.navigate(city)
+                            }
+                        )
                     }
-                    composable("city_detail_screen") {
-
+                    composable<CityApiModel>(
+                        typeMap = mapOf(
+                            typeOf<CityApiModel>() to parcelableType<CityApiModel>(),
+                            typeOf<CoordApiModel>() to parcelableType<CoordApiModel>()
+                            )
+                    ) { backStackEntry ->
+                        val cityDetail = backStackEntry.toRoute<CityApiModel>()
+                        CityDetailScreen(
+                            navController = navController,
+                            city = cityDetail
+                        )
                     }
                     composable(
-                        "map_screen",
+                        "map_screen"/*,
                         arguments = listOf(
                             navArgument("lon") { type = NavType.FloatType },
                             navArgument("lat") { type = NavType.FloatType }
-                        )
+                        )*/
                     ) {
 
                     }
