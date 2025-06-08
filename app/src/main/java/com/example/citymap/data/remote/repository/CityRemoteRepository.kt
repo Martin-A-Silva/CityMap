@@ -33,7 +33,6 @@ class CityRemoteRepository @Inject constructor(
 
         reader.beginArray()
         while (reader.hasNext()) {
-            //val city = gson.fromJson(reader, City::class.java)
             val city : City = gson.fromJson(reader, City::class.java)
             batch.add(city)
             if (batch.size >= 1000) {
@@ -51,9 +50,13 @@ class CityRemoteRepository @Inject constructor(
         response.body()!!.close()
     }
 
-    fun getCitiesByPrefix(prefix: String): Flow<PagingData<City>> {
+    fun getCities(prefix: String, onlyFavorites: Boolean): Flow<PagingData<City>> {
         return Pager(PagingConfig(pageSize = 50)) {
-            dao.searchCitiesByPrefix(prefix)
+            dao.searchCities(prefix, onlyFavorites)
         }.flow
+    }
+
+    suspend fun toggleFavorite(cityId: Int, favorite: Boolean) {
+        dao.setFavorite(cityId, favorite)
     }
 }

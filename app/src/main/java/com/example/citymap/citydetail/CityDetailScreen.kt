@@ -72,25 +72,15 @@ fun CityDetailScreen(
 @Preview(showBackground = true, name = "CityDetailScreen Preview")
 @Composable
 fun CityDetailScreenPreview() {
-    // 1. Create a mock NavController for the preview
     val mockNavController = rememberNavController()
-
-    // 2. Create mock CityApiModel data
     val mockCity = City(
         id = 1,
         name = "Springfield",
         country = "USA",
         coord = Coord(lat = 37.2153, lon = -93.2982),
-        // Add other necessary fields for CityApiModel if any, with default/mock values
-        // For example, if CityApiModel has a 'population' field:
-        // population = 170000
     )
-
-    // 3. Optional: Wrap with your app's theme if you have one
-    // YourAppTheme {
     CityDetailScreen(
         navController = mockNavController,
         city = mockCity
     )
-    // }
 }

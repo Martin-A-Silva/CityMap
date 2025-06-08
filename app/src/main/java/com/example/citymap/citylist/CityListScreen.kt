@@ -2,6 +2,7 @@ package com.example.citymap.citylist
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -28,6 +29,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,12 +42,15 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.citymap.data.model.City
+import com.example.citymap.data.model.Coord
 
 @Composable
 fun CityListScreen(
@@ -55,6 +60,8 @@ fun CityListScreen(
     modifier: Modifier = Modifier,
     viewModel: CityListViewModel = hiltViewModel()
 ) {
+    val showFavoritesOnly by viewModel.showFavoritesOnly.collectAsState()
+
     Surface(
         color = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxSize()
@@ -62,12 +69,26 @@ fun CityListScreen(
         Column {
             Spacer(modifier = Modifier.height(24.dp))
 
-            SearchBar(
-                hint = "Search city by name", modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                viewModel.updatePrefix(it)
+                SearchBar(
+                    hint = "Search city by name", modifier = Modifier
+                        .weight(1f)
+                        .padding(16.dp)
+                ) {
+                    viewModel.updatePrefix(it)
+                }
+                IconButton(
+                    modifier = Modifier.padding(end = 20.dp),
+                    onClick = { viewModel.toggleFavoritesOnly() }
+                ) {
+                    Icon(
+                        if (showFavoritesOnly) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = if (showFavoritesOnly) "Remove from favorites" else "Add to favorites"
+                    )
+                }
             }
             CityList(navController, onItemClick, onInfoClick)
         }
@@ -118,23 +139,19 @@ fun CityList(
     onInfoClick: (City) -> Unit,
     viewModel: CityListViewModel = hiltViewModel()
 ) {
-    //val cityList by remember { viewModel.cities }
-    val isLoading by remember { viewModel.isLoading }
-    val loadError by remember { viewModel.loadError }
-    val isSearching by remember { viewModel.isSearching }
     LaunchedEffect(Unit) {
         viewModel.loadCitiesFromNetwork()
     }
     val cities = viewModel.cityPagingData.collectAsLazyPagingItems()
-
     LazyColumn(contentPadding = PaddingValues(16.dp)) {
         items(cities.itemCount) { index ->
             val city = cities[index]
-            city?.let {
+            city?.let { safeCity ->
                 CityEntry(
-                    entry = it,
+                    entry = safeCity,
                     onItemClick = onItemClick,
-                    onInfoClick = onInfoClick
+                    onInfoClick = onInfoClick,
+                    onToggleFavorite = { viewModel.toggleFavorite(it)}
                 )
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
@@ -164,8 +181,8 @@ fun CityEntry(
     entry: City,
     onItemClick: (City) -> Unit,
     onInfoClick: (City) -> Unit,
+    onToggleFavorite: (City) -> Unit
 ) {
-    var isToggled by rememberSaveable { mutableStateOf(false) }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -192,16 +209,62 @@ fun CityEntry(
                 )
             }
             IconButton(
-                onClick = { isToggled = !isToggled }
+                onClick = { onToggleFavorite(entry) }
             ) {
                 Icon(
-                    if (isToggled) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = if (isToggled) "Remove from favorites" else "Add to favorites"
+                    if (entry.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = if (entry.isFavorite) "Remove from favorites" else "Add to favorites"
                 )
             }
         }
         Row {
             Text("Lat: ${entry.coord.lon} - Lon: ${entry.coord.lat}")
+        }
+    }
+}
+
+
+@Preview
+@Composable
+fun CityListScreenPreview(modifier: Modifier = Modifier) {
+    var isToggled by rememberSaveable { mutableStateOf(false) }
+    val mockCity = City(
+        id = 1,
+        name = "Springfield",
+        country = "USA",
+        coord = Coord(lat = 37.2153, lon = -93.2982),
+    )
+    Surface(
+        color = MaterialTheme.colorScheme.background,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Column {
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                SearchBar(
+                    hint = "Search city by name", modifier = Modifier
+                        .weight(1f)
+                        .padding(16.dp)
+                ) {
+                    //viewModel.updatePrefix(it)
+                }
+                IconButton(
+                    modifier = Modifier.padding(end = 20.dp),
+                    onClick = { isToggled = !isToggled }
+                ) {
+                    Icon(
+                        if (isToggled) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = if (isToggled) "Remove from favorites" else "Add to favorites"
+                    )
+                }
+            }
+            Row(modifier = Modifier.padding(20.dp)) {
+                CityEntry(mockCity, {}, {}) { }
+            }
         }
     }
 }

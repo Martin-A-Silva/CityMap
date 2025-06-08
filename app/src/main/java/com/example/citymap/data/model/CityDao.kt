@@ -20,8 +20,16 @@ interface CityDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCities(cities: List<City>)
 
-    @Query("SELECT * FROM City WHERE name LIKE :prefix || '%' ORDER BY name")
-    fun searchCitiesByPrefix(prefix: String): PagingSource<Int, City>
+    @Query("""
+        SELECT * FROM City 
+        WHERE name LIKE :prefix || '%' 
+        AND (:onlyFavorites IS 0 OR isFavorite = 1)
+        ORDER BY name
+    """)
+    fun searchCities(prefix: String, onlyFavorites: Boolean): PagingSource<Int, City>
+
+    @Query("UPDATE City SET isFavorite = :favorite WHERE id = :cityId")
+    suspend fun setFavorite(cityId: Int, favorite: Boolean)
 }
 
 @Entity(indices = [Index("name")])
@@ -31,7 +39,8 @@ data class City(
     @PrimaryKey @SerializedName("_id") val id: Int,
     val name: String,
     val country: String,
-    @Embedded(prefix = "coord_") val coord: Coord
+    @Embedded(prefix = "coord_") val coord: Coord,
+    val isFavorite: Boolean = false
 ) : Parcelable
 
 @Serializable
