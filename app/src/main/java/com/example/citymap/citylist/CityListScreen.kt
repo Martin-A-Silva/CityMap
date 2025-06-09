@@ -42,6 +42,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -100,14 +101,16 @@ fun SearchBar(
     hint: String = "Search...",
     onSearch: (String) -> Unit = {}
 ) {
-    var text by remember { mutableStateOf("") }
+    var textFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(""))
+    }
     var isHintDisplayed by remember { mutableStateOf(hint != "") }
     Box(modifier = modifier) {
         BasicTextField(
-            value = text,
+            value = textFieldValue,
             onValueChange = {
-                text = it
-                onSearch(it)
+                textFieldValue = it
+                onSearch(it.text)
             },
             maxLines = 1,
             singleLine = true,
