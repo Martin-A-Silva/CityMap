@@ -9,9 +9,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -21,6 +24,7 @@ import com.example.citymap.citylist.CityListScreen
 import com.example.citymap.data.model.City
 import com.example.citymap.data.model.Coord
 import com.example.citymap.map.MapScreen
+import com.example.citymap.map.SharedMapViewModel
 import com.example.citymap.ui.theme.CityMapTheme
 import com.example.citymap.util.parcelableType
 import dagger.hilt.android.AndroidEntryPoint
@@ -78,16 +82,18 @@ class MainActivity : ComponentActivity() {
                     ) { backStackEntry ->
                         val cityCoord = backStackEntry.toRoute<Coord>()
                         MapScreen(
-                            navController = navController,
                             coord = cityCoord
                         )
                     }
                     composable("city_map_screen") {
+                        val sharedMapViewModel : SharedMapViewModel = hiltViewModel()
+                        val selectedCoord by sharedMapViewModel.selectedCoord.collectAsState()
+
                         Row {
                             CityListScreen(
                                 navController,
                                 onItemClick = { coord ->
-                                    //update viewModel
+                                    sharedMapViewModel.selectCoord(coord)
                                 },
                                 onInfoClick = { city ->
                                     navController.navigate(city)
@@ -95,8 +101,7 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier.weight(1f)
                             )
                             MapScreen(
-                                navController = navController,
-                                coord = Coord(lat = 0.0, lon = 0.0),
+                                coord = selectedCoord,
                                 modifier = Modifier.weight(1f)
                             )
                         }

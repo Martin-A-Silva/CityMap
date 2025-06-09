@@ -7,8 +7,6 @@ import com.example.citymap.data.model.CityDao
 import com.example.citymap.data.remote.CityApi
 import com.example.citymap.data.remote.repository.CityRemoteRepository
 import com.example.citymap.util.Constants.BASE_URL
-import com.google.gson.FieldNamingPolicy
-import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
