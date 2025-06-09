@@ -41,27 +41,40 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
-                    startDestination = when (configuration.orientation) {
-                        Configuration.ORIENTATION_PORTRAIT -> {
-                            "city_list_screen"
-                        }
-
-                        else -> {
-                            "city_map_screen"
-                        }
-                    }
+                    startDestination = "city_list_screen"
                 ) {
                     composable("city_list_screen") {
-                        CityListScreen(
-                            navController,
-                            onItemClick = { coord ->
-                                navController.navigate(coord)
-                            },
-                            onInfoClick = { city ->
-                                navController.navigate(city)
-                            },
-                            modifier = Modifier.fillMaxSize()
-                        )
+                        val sharedMapViewModel: SharedMapViewModel = hiltViewModel()
+                        val selectedCoord by sharedMapViewModel.selectedCoord.collectAsState()
+
+                        Row {
+                            CityListScreen(
+                                navController,
+                                onItemClick = { coord ->
+                                    when (configuration.orientation) {
+                                        Configuration.ORIENTATION_PORTRAIT -> {
+                                            navController.navigate(coord)
+                                        }
+                                        else -> {
+                                            sharedMapViewModel.selectCoord(coord)
+                                        }
+                                    }
+                                },
+                                onInfoClick = { city ->
+                                    navController.navigate(city)
+                                },
+                                modifier = when (configuration.orientation) {
+                                    Configuration.ORIENTATION_PORTRAIT -> Modifier.fillMaxSize()
+                                    else -> Modifier.weight(1f)
+                                }
+                            )
+                            if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                                MapScreen(
+                                    coord = selectedCoord,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
                     }
                     composable<City>(
                         typeMap = mapOf(
@@ -84,27 +97,6 @@ class MainActivity : ComponentActivity() {
                         MapScreen(
                             coord = cityCoord
                         )
-                    }
-                    composable("city_map_screen") {
-                        val sharedMapViewModel : SharedMapViewModel = hiltViewModel()
-                        val selectedCoord by sharedMapViewModel.selectedCoord.collectAsState()
-
-                        Row {
-                            CityListScreen(
-                                navController,
-                                onItemClick = { coord ->
-                                    sharedMapViewModel.selectCoord(coord)
-                                },
-                                onInfoClick = { city ->
-                                    navController.navigate(city)
-                                },
-                                modifier = Modifier.weight(1f)
-                            )
-                            MapScreen(
-                                coord = selectedCoord,
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
                     }
                 }
             }
