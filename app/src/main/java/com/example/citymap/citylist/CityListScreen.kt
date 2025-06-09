@@ -74,7 +74,7 @@ fun CityListScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 SearchBar(
-                    hint = "Search city by name", modifier = Modifier
+                    modifier = Modifier
                         .weight(1f)
                         .padding(16.dp)
                 ) {
@@ -90,7 +90,7 @@ fun CityListScreen(
                     )
                 }
             }
-            CityList(navController, onItemClick, onInfoClick)
+            CityList(onItemClick, onInfoClick)
         }
     }
 }
@@ -98,7 +98,7 @@ fun CityListScreen(
 @Composable
 fun SearchBar(
     modifier: Modifier = Modifier,
-    hint: String = "Search...",
+    hint: String = "Search city by name",
     onSearch: (String) -> Unit = {}
 ) {
     var textFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
@@ -136,16 +136,20 @@ fun SearchBar(
 
 @Composable
 fun CityList(
-    navController: NavController,
     onItemClick: (Coord) -> Unit,
     onInfoClick: (City) -> Unit,
     viewModel: CityListViewModel = hiltViewModel()
 ) {
-    LaunchedEffect(Unit) {
-        viewModel.loadCitiesFromNetwork()
-    }
     val cities = viewModel.cityPagingData.collectAsLazyPagingItems()
+    val isLoading by viewModel.isLoading.collectAsState()
 
+    Box(modifier = Modifier
+        .padding(start = 20.dp, bottom = 10.dp)
+        .height(20.dp)) {
+        if (isLoading) {
+            Text("Loading...")
+        }
+    }
     LazyColumn(contentPadding = PaddingValues(16.dp)) {
         items(cities.itemCount) { index ->
             val city = cities[index]

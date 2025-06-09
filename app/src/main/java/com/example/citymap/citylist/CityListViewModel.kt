@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import com.example.citymap.data.model.City
-import com.example.citymap.data.remote.repository.CityRemoteRepository
+import com.example.citymap.data.repository.CityRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +17,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CityListViewModel @Inject constructor(
-    private val repository: CityRemoteRepository
+    private val repository: CityRepository
 ) : ViewModel() {
 
     private val _showFavoritesOnly = MutableStateFlow(false)
@@ -25,11 +25,18 @@ class CityListViewModel @Inject constructor(
 
     private val searchPrefix = MutableStateFlow("")
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val cityPagingData = combine(searchPrefix, showFavoritesOnly) { prefix, onlyFavs ->
         repository.getCities(prefix, onlyFavs)
     }.flatMapLatest { it }
         .cachedIn(viewModelScope)
+
+    init {
+        loadCitiesFromNetwork()
+    }
 
     fun updatePrefix(prefix: String) {
         searchPrefix.value = prefix
@@ -45,9 +52,11 @@ class CityListViewModel @Inject constructor(
         }
     }
 
-    fun loadCitiesFromNetwork() {
+    private fun loadCitiesFromNetwork() {
         viewModelScope.launch {
-            repository.downloadAndCacheCities()
+            _isLoading.value = true
+            repository.downloadAndCacheCitiesIfEmpty()
+            _isLoading.value = false
         }
     }
 }
