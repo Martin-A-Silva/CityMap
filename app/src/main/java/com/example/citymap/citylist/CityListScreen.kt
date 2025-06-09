@@ -100,7 +100,7 @@ fun SearchBar(
     hint: String = "Search...",
     onSearch: (String) -> Unit = {}
 ) {
-    var text by remember { mutableStateOf("") }
+    var text by rememberSaveable { mutableStateOf("") }
     var isHintDisplayed by remember { mutableStateOf(hint != "") }
     Box(modifier = modifier) {
         BasicTextField(
@@ -142,13 +142,16 @@ fun CityList(
         viewModel.loadCitiesFromNetwork()
     }
     val cities = viewModel.cityPagingData.collectAsLazyPagingItems()
+    val favoriteIds by viewModel.favoriteIds.collectAsState()
 
     LazyColumn(contentPadding = PaddingValues(16.dp)) {
         items(cities.itemCount) { index ->
             val city = cities[index]
             city?.let { safeCity ->
+                val isFavorite = favoriteIds.contains(safeCity.id)
                 CityEntry(
                     entry = safeCity,
+                    isFavorite = isFavorite,
                     onItemClick = onItemClick,
                     onInfoClick = onInfoClick,
                     onToggleFavorite = { viewModel.toggleFavorite(it) }
@@ -178,6 +181,7 @@ fun CityList(
 @Composable
 fun CityEntry(
     entry: City,
+    isFavorite: Boolean,
     onItemClick: (Coord) -> Unit,
     onInfoClick: (City) -> Unit,
     onToggleFavorite: (City) -> Unit
@@ -211,8 +215,8 @@ fun CityEntry(
                 onClick = { onToggleFavorite(entry) }
             ) {
                 Icon(
-                    if (entry.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = if (entry.isFavorite) "Remove from favorites" else "Add to favorites"
+                    if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites"
                 )
             }
         }
@@ -262,7 +266,7 @@ fun CityListScreenPreview(modifier: Modifier = Modifier) {
                 }
             }
             Row(modifier = Modifier.padding(20.dp)) {
-                CityEntry(mockCity, {}, {}) { }
+                CityEntry(mockCity, false, {}, {}) { }
             }
         }
     }

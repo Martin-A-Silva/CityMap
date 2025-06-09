@@ -4,7 +4,10 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.example.citymap.data.model.City
-import com.example.citymap.data.model.CityDao
+import com.example.citymap.data.local.CityDao
+import com.example.citymap.data.model.FavoriteCity
+import com.example.citymap.data.local.FavoriteCityDao
+import com.example.citymap.data.paging.FavoriteCityPagingSource
 import com.example.citymap.data.remote.CityApi
 import com.google.gson.Gson
 import com.google.gson.stream.JsonReader
@@ -19,7 +22,8 @@ import javax.inject.Inject
 @ActivityScoped
 class CityRemoteRepository @Inject constructor(
     private val api: CityApi,
-    private val dao: CityDao
+    private val cityDao: CityDao,
+    private val favoriteCityDao: FavoriteCityDao
 ) {
     suspend fun downloadAndCacheCities() = withContext(Dispatchers.IO) {
         val response = api.getCityList()
@@ -36,27 +40,37 @@ class CityRemoteRepository @Inject constructor(
             val city : City = gson.fromJson(reader, City::class.java)
             batch.add(city)
             if (batch.size >= 1000) {
-                dao.insertCities(batch)
+                cityDao.insertCities(batch)
                 batch.clear()
             }
         }
         reader.endArray()
 
         if (batch.isNotEmpty()) {
-            dao.insertCities(batch)
+            cityDao.insertCities(batch)
         }
 
         reader.close()
         response.body()!!.close()
     }
 
+    fun getFavoriteIds(): Flow<List<Int>> = favoriteCityDao.getFavoriteIds()
+
     fun getCities(prefix: String, onlyFavorites: Boolean): Flow<PagingData<City>> {
         return Pager(PagingConfig(pageSize = 50)) {
-            dao.searchCities(prefix, onlyFavorites)
+            if (onlyFavorites) {
+                FavoriteCityPagingSource(cityDao, favoriteCityDao, prefix)
+            } else {
+                cityDao.searchCitiesByPrefix(prefix)
+            }
         }.flow
     }
 
-    suspend fun toggleFavorite(cityId: Int, favorite: Boolean) {
-        dao.setFavorite(cityId, favorite)
+    suspend fun toggleFavorite(cityId: Int, shouldFavorite: Boolean) {
+        if (shouldFavorite) {
+            favoriteCityDao.addFavorite(FavoriteCity(cityId))
+        } else {
+            favoriteCityDao.removeFavorite(FavoriteCity(cityId))
+        }
     }
 }

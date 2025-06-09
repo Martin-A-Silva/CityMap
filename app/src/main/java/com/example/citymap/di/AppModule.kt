@@ -2,8 +2,9 @@ package com.example.citymap.di
 
 import android.app.Application
 import androidx.room.Room
-import com.example.citymap.data.model.AppDatabase
-import com.example.citymap.data.model.CityDao
+import com.example.citymap.data.local.AppDatabase
+import com.example.citymap.data.local.CityDao
+import com.example.citymap.data.local.FavoriteCityDao
 import com.example.citymap.data.remote.CityApi
 import com.example.citymap.data.remote.repository.CityRemoteRepository
 import com.example.citymap.util.Constants.BASE_URL
@@ -21,7 +22,8 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideCityRepository(api: CityApi, dao: CityDao) = CityRemoteRepository(api, dao)
+    fun provideCityRepository(api: CityApi, cityDao: CityDao, favoriteCityDao: FavoriteCityDao) =
+        CityRemoteRepository(api, cityDao, favoriteCityDao)
 
     @Singleton
     @Provides
@@ -42,4 +44,8 @@ object AppModule {
 
     @Provides
     fun provideCityDao(db: AppDatabase): CityDao = db.cityDao()
+
+    @Provides
+    fun provideFavoriteCityDao(db: AppDatabase): FavoriteCityDao = db.favoriteCityDao()
+
 }

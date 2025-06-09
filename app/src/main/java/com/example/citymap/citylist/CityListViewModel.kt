@@ -8,12 +8,16 @@ import com.example.citymap.data.remote.repository.CityRemoteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+
 
 @HiltViewModel
 class CityListViewModel @Inject constructor(
@@ -25,11 +29,20 @@ class CityListViewModel @Inject constructor(
 
     private val searchPrefix = MutableStateFlow("")
 
+    val favoriteIds: StateFlow<Set<Int>> = repository.getFavoriteIds()
+        .map { it.toSet() }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptySet()
+        )
+
     @OptIn(ExperimentalCoroutinesApi::class)
-    val cityPagingData = combine(searchPrefix, showFavoritesOnly) { prefix, onlyFavs ->
-        repository.getCities(prefix, onlyFavs)
-    }.flatMapLatest { it }
-        .cachedIn(viewModelScope)
+    val cityPagingData =
+        combine(searchPrefix, showFavoritesOnly, favoriteIds) { prefix, onlyFavs, favIds ->
+            repository.getCities(prefix, onlyFavs)
+        }.flatMapLatest { it }
+            .cachedIn(viewModelScope)
 
     fun updatePrefix(prefix: String) {
         searchPrefix.value = prefix
@@ -41,7 +54,8 @@ class CityListViewModel @Inject constructor(
 
     fun toggleFavorite(city: City) {
         viewModelScope.launch {
-            repository.toggleFavorite(city.id, !city.isFavorite)
+            val isCurrentlyFavorite = favoriteIds.value.contains(city.id)
+            repository.toggleFavorite(city.id, !isCurrentlyFavorite)
         }
     }
 
