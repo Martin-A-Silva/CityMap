@@ -1,4 +1,4 @@
-package com.example.citymap.citylist
+package com.example.citymap.ui.citylist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

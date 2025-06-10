@@ -1,4 +1,4 @@
-package com.example.citymap.map
+package com.example.citymap.ui.map
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect

@@ -1,4 +1,4 @@
-package com.example.citymap.citylist
+package com.example.citymap.ui.citylist
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,7 +28,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +36,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
@@ -46,7 +46,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.citymap.data.model.City
@@ -54,7 +53,6 @@ import com.example.citymap.data.model.Coord
 
 @Composable
 fun CityListScreen(
-    navController: NavController,
     onItemClick: (Coord) -> Unit,
     onInfoClick: (City) -> Unit,
     modifier: Modifier = Modifier,
@@ -143,11 +141,22 @@ fun CityList(
     val cities = viewModel.cityPagingData.collectAsLazyPagingItems()
     val isLoading by viewModel.isLoading.collectAsState()
 
-    Box(modifier = Modifier
-        .padding(start = 20.dp, bottom = 10.dp)
-        .height(20.dp)) {
+    Box(
+        modifier = Modifier
+            .padding(start = 20.dp, bottom = 10.dp)
+            .shadow(5.dp, CircleShape)
+            .background(color = Color.White, CircleShape)
+    ) {
         if (isLoading) {
-            Text("Loading...")
+            Row(
+                modifier = Modifier.padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CircularProgressIndicator(modifier = Modifier.scale(0.5f))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Loading cities...")
+            }
         }
     }
     LazyColumn(contentPadding = PaddingValues(16.dp)) {
@@ -166,15 +175,15 @@ fun CityList(
         cities.apply {
             when {
                 loadState.append is LoadState.Loading -> {
-                    item{CircularProgressIndicator()}
+                    item { CircularProgressIndicator() }
                 }
 
                 loadState.refresh is LoadState.Loading -> {
-                    item{CircularProgressIndicator()}
+                    item { CircularProgressIndicator() }
                 }
 
                 loadState.append is LoadState.Error -> {
-                    item{Text("Error loading more cities")}
+                    item { Text("Error loading more cities") }
                 }
             }
         }
@@ -267,6 +276,24 @@ fun CityListScreenPreview(modifier: Modifier = Modifier) {
                         contentDescription = if (isToggled) "Remove from favorites" else "Add to favorites"
                     )
                 }
+            }
+            Box(
+                modifier = Modifier
+                    .padding(start = 20.dp, bottom = 10.dp)
+                    .shadow(5.dp, CircleShape)
+                    .background(color = Color.White, CircleShape)
+            ) {
+
+                Row(
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.scale(0.5f))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Loading cities...")
+                }
+
             }
             Row(modifier = Modifier.padding(20.dp)) {
                 CityEntry(mockCity, {}, {}) { }

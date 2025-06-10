@@ -1,4 +1,4 @@
-package com.example.citymap.citydetail
+package com.example.citymap.ui.citydetail
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -33,7 +33,7 @@ fun CityDetailScreen(
 ) {
     Surface {
         Column(
-            modifier = modifier//.padding(horizontal = 20.dp)
+            modifier = modifier
         ) {
             Spacer(modifier = Modifier.height(32.dp))
             Icon(

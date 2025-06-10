@@ -6,7 +6,6 @@ import com.example.citymap.data.local.AppDatabase
 import com.example.citymap.data.local.CityDao
 import com.example.citymap.data.local.MetaDataDao
 import com.example.citymap.data.remote.CityApi
-import com.example.citymap.data.repository.CityRepository
 import com.example.citymap.util.Constants.BASE_URL
 import dagger.Module
 import dagger.Provides
@@ -19,11 +18,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-
-    @Singleton
-    @Provides
-    fun provideCityRepository(api: CityApi, cityDao: CityDao, metaDataDao: MetaDataDao) =
-        CityRepository(api, cityDao, metaDataDao)
 
     @Singleton
     @Provides

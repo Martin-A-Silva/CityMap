@@ -1,4 +1,4 @@
-package com.example.citymap.map
+package com.example.citymap.ui.map
 
 import androidx.lifecycle.ViewModel
 import com.example.citymap.data.model.Coord
@@ -9,7 +9,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SharedMapViewModel @Inject constructor() : ViewModel() {
-    private val _selectedCoord = MutableStateFlow(Coord(0.0,0.0))
+    private val _selectedCoord = MutableStateFlow(Coord(0.0, 0.0))
     val selectedCoord: StateFlow<Coord> = _selectedCoord
 
     fun selectCoord(coord: Coord) {

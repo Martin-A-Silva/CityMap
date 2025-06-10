@@ -19,12 +19,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.example.citymap.citydetail.CityDetailScreen
-import com.example.citymap.citylist.CityListScreen
 import com.example.citymap.data.model.City
 import com.example.citymap.data.model.Coord
-import com.example.citymap.map.MapScreen
-import com.example.citymap.map.SharedMapViewModel
+import com.example.citymap.ui.citydetail.CityDetailScreen
+import com.example.citymap.ui.citylist.CityListScreen
+import com.example.citymap.ui.map.MapScreen
+import com.example.citymap.ui.map.SharedMapViewModel
 import com.example.citymap.ui.theme.CityMapTheme
 import com.example.citymap.util.parcelableType
 import dagger.hilt.android.AndroidEntryPoint
@@ -49,12 +49,12 @@ class MainActivity : ComponentActivity() {
 
                         Row {
                             CityListScreen(
-                                navController,
                                 onItemClick = { coord ->
                                     when (configuration.orientation) {
                                         Configuration.ORIENTATION_PORTRAIT -> {
                                             navController.navigate(coord)
                                         }
+
                                         else -> {
                                             sharedMapViewModel.selectCoord(coord)
                                         }
