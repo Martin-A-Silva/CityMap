@@ -44,3 +44,5 @@ toggling the "favorites only" would have been nice though.
 - Using UI States and UI Events would have made the code more readable, predictable and testable
 - UseCases and a domain layer would make the code more Clean Arch-y, but for a small app they can
 be expendable
+
+![Screen Recording 2025-06-10 at 21 18 39](https://github.com/user-attachments/assets/efaec481-536b-4357-be58-268978f0132a)
